@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinControl — Controle Financeiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --accent: #7BAE7F;
+  --accent-dark: #5a8f5f;
+  --accent-light: #d4edda;
+  --accent-glow: rgba(123,174,127,0.25);
+  --bg: #F4F1EC;
+  --bg-card: #FDFCF9;
+  --bg-card2: #F9F7F2;
+  --text-primary: #1C1C1E;
+  --text-secondary: #6B6B6B;
+  --text-muted: #A0A0A0;
+  --border: #E5E0D8;
+  --negative: #D95F5F;
+  --positive: #4CAF7D;
+  --fixo-color: #5B8DB8;
+  --variavel-color: #C9A84C;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --tr: all 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="ocean"]      { --accent:#5B8DB8; --accent-dark:#3d6f9a; --accent-light:#dbeeff; --accent-glow:rgba(91,141,184,0.25); }
+[data-theme="terracotta"] { --accent:#C17D5E; --accent-dark:#a0603e; --accent-light:#fde9df; --accent-glow:rgba(193,125,94,0.25); }
+[data-theme="lavender"]   { --accent:#9B7EC8; --accent-dark:#7a5faa; --accent-light:#ede5ff; --accent-glow:rgba(155,126,200,0.25); }
+[data-theme="gold"]       { --accent:#C9A84C; --accent-dark:#a88630; --accent-light:#fdf3d7; --accent-glow:rgba(201,168,76,0.25); }
+[data-theme="sage"]       { --accent:#7BAE7F; --accent-dark:#5a8f5f; --accent-light:#d4edda; --accent-glow:rgba(123,174,127,0.25); }
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text-primary);min-height:100vh;font-size:15px;line-height:1.6;transition:var(--tr);}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(253,252,249,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{font-size:24px;color:var(--accent);transition:var(--tr);}
+.logo-text{font-family:var(--font-head);font-weight:800;font-size:20px;letter-spacing:-0.5px;}
+.color-picker-group{display:flex;align-items:center;gap:10px;}
+.color-label{font-size:12px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+.color-swatches{display:flex;gap:6px;}
+.swatch{width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:var(--tr);outline:none;}
+.swatch:hover{transform:scale(1.2);}
+.swatch.active{border-color:var(--text-primary);transform:scale(1.15);}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:36px 24px 60px;display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"salary expense" "chart chart" "fixos variaveis";gap:20px;}
+
+/* CARD */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-sm);transition:var(--tr);animation:fadeUp 0.4s ease both;}
+.card:hover{box-shadow:var(--shadow-md);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.card-title{font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.3px;}
+.card-icon{font-size:20px;opacity:0.7;}
+.header-actions{display:flex;align-items:center;gap:10px;}
+
+/* SALÁRIO */
+.salary-card{grid-area:salary;}
+.salary-input-row{display:flex;gap:10px;margin-bottom:24px;}
+.input-wrap{flex:1;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:var(--tr);background:var(--bg-card2);}
+.input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.input-prefix{padding:0 12px;color:var(--text-muted);font-weight:500;font-size:14px;user-select:none;}
+.input-wrap input{flex:1;border:none;outline:none;padding:12px 12px 12px 0;font-family:var(--font-body);font-size:15px;background:transparent;color:var(--text-primary);}
+.salary-summary{display:flex;align-items:center;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:18px;}
+.summary-item{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:4px;}
+.summary-divider{width:1px;height:40px;background:var(--border);}
+.summary-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+.summary-value{font-family:var(--font-head);font-size:15px;font-weight:700;}
+.summary-value.negative{color:var(--negative);}
+.summary-value.positive{color:var(--positive);}
+.progress-bar-wrap{display:flex;align-items:center;gap:12px;}
+.progress-bar-track{flex:1;height:8px;background:var(--border);border-radius:var(--radius-pill);overflow:hidden;}
+.progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));border-radius:var(--radius-pill);transition:width 0.6s cubic-bezier(0.4,0,0.2,1);}
+.progress-label{font-size:12px;color:var(--text-muted);font-weight:500;white-space:nowrap;}
+
+/* FORMULÁRIO */
+.expense-card{grid-area:expense;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full-width{grid-column:1/-1;}
+.form-group label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);}
+.form-group input,.form-group select{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:var(--font-body);font-size:14px;color:var(--text-primary);background:var(--bg-card2);outline:none;transition:var(--tr);}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.form-group select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B6B6B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--bg-card2);padding-right:32px;}
+
+/* BOTÕES */
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 22px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:var(--tr);white-space:nowrap;}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 4px 12px var(--accent-glow);}
+.btn-primary:active{transform:translateY(0);}
+.btn-full{width:100%;padding:14px;font-size:15px;font-weight:600;}
+.btn-delete{background:transparent;border:1px solid var(--border);color:var(--negative);border-radius:6px;padding:5px 10px;font-size:13px;cursor:pointer;transition:var(--tr);}
+.btn-delete:hover{background:#fff0f0;border-color:var(--negative);}
+
+/* GRÁFICO */
+.chart-card{grid-area:chart;display:flex;flex-direction:column;}
+.chart-container{position:relative;display:flex;justify-content:center;align-items:center;min-height:280px;}
+#pieChart{display:none;}
+.chart-empty{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text-muted);}
+.chart-empty span{font-size:48px;opacity:0.4;}
+.chart-empty p{font-size:14px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:20px;justify-content:center;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-secondary);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* TABELAS */
+#fixosSection{grid-area:fixos;}
+#variaveisSection{grid-area:variaveis;}
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
+.expense-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.expense-table thead{background:var(--accent);color:#fff;transition:var(--tr);}
+.expense-table thead th{padding:11px 14px;text-align:left;font-family:var(--font-head);font-size:12px;font-weight:600;letter-spacing:0.4px;white-space:nowrap;}
+.expense-table tbody tr{border-bottom:1px solid var(--border);transition:var(--tr);}
+.expense-table tbody tr:last-child{border-bottom:none;}
+.expense-table tbody tr:hover:not(.empty-row){background:var(--accent-light);}
+.expense-table td{padding:11px 14px;color:var(--text-primary);vertical-align:middle;}
+.empty-row td{text-align:center;color:var(--text-muted);font-style:italic;padding:24px;}
+.cat-tag{display:inline-block;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px 10px;font-size:12px;color:var(--text-secondary);}
+.amount-cell{font-family:var(--font-head);font-weight:700;color:var(--negative);}
+
+/* BADGES */
+.badge{font-family:var(--font-head);font-size:13px;font-weight:700;padding:4px 12px;border-radius:var(--radius-pill);}
+.badge-fixo{background:rgba(91,141,184,0.15);color:var(--fixo-color);}
+.badge-variavel{background:rgba(201,168,76,0.15);color:var(--variavel-color);}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--text-primary);color:#fff;padding:14px 22px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);z-index:9999;animation:slideIn 0.3s ease;display:flex;align-items:center;gap:10px;}
+.toast.success{background:var(--positive);}
+.toast.error{background:var(--negative);}
+@keyframes slideIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border);}
+
+/* RESPONSIVO */
+@media(max-width:768px){
+  .main{grid-template-columns:1fr;grid-template-areas:"salary" "expense" "chart" "fixos" "variaveis";padding:20px 16px 50px;gap:16px;}
+  .header{padding:0 16px;}
+  .color-label{display:none;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full-width{grid-column:1;}
+}
+</style>
+</head>
+<body data-theme="sage">
+
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">◈</span>
+    <span class="logo-text">FinControl</span>
+  </div>
+  <div class="color-picker-group">
+    <span class="color-label">Cor do tema</span>
+    <div class="color-swatches" id="colorSwatches">
+      <button class="swatch active" data-color="sage"        style="background:#7BAE7F;" title="Verde Sálvia"></button>
+      <button class="swatch"        data-color="ocean"       style="background:#5B8DB8;" title="Azul Oceano"></button>
+      <button class="swatch"        data-color="terracotta"  style="background:#C17D5E;" title="Terracota"></button>
+      <button class="swatch"        data-color="lavender"    style="background:#9B7EC8;" title="Lavanda"></button>
+      <button class="swatch"        data-color="gold"        style="background:#C9A84C;" title="Dourado"></button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- SALÁRIO -->
+  <section class="card salary-card">
+    <div class="card-header">
+      <h2 class="card-title">Meu Salário</h2>
+      <span class="card-icon">💰</span>
+    </div>
+    <div class="salary-input-row">
+      <div class="input-wrap">
+        <span class="input-prefix">R$</span>
+        <input type="number" id="salaryInput" placeholder="0,00" min="0" step="0.01"/>
+      </div>
+      <button class="btn-primary" id="setSalaryBtn">Definir</button>
+    </div>
+    <div class="salary-summary">
+      <div class="summary-item">
+        <span class="summary-label">Salário</span>
+        <span class="summary-value" id="displaySalary">R$ 0,00</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-label">Gasto Total</span>
+        <span class="summary-value negative" id="displayTotal">R$ 0,00</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-label">Saldo</span>
+        <span class="summary-value positive" id="displayBalance">R$ 0,00</span>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">0% gasto</span>
+    </div>
+  </section>
+
+  <!-- FORMULÁRIO -->
+  <section class="card expense-card">
+    <div class="card-header">
+      <h2 class="card-title">Adicionar Gasto</h2>
+      <span class="card-icon">➕</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label>Descrição</label>
+        <input type="text" id="expenseDesc" placeholder="Ex: Aluguel, Mercado..."/>
+      </div>
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="expenseAmount" placeholder="0,00" min="0" step="0.01"/>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="expenseType">
+          <option value="fixo">🔒 Fixo</option>
+          <option value="variavel">🔄 Variável</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="expenseCategory">
+          <option value="moradia">🏠 Moradia</option>
+          <option value="alimentacao">🍽️ Alimentação</option>
+          <option value="transporte">🚗 Transporte</option>
+          <option value="saude">💊 Saúde</option>
+          <option value="lazer">🎮 Lazer</option>
+          <option value="educacao">📚 Educação</option>
+          <option value="vestuario">👗 Vestuário</option>
+          <option value="outros">📦 Outros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="expenseDate"/>
+      </div>
+    </div>
+    <button class="btn-primary btn-full" id="addExpenseBtn">Adicionar Gasto</button>
+  </section>
+
+  <!-- GRÁFICO -->
+  <section class="card chart-card">
+    <div class="card-header">
+      <h2 class="card-title">Distribuição dos Gastos</h2>
+      <span class="card-icon">📊</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="pieChart" width="280" height="280"></canvas>
+      <div class="chart-empty" id="chartEmpty">
+        <span>📊</span>
+        <p>Adicione gastos para ver o gráfico</p>
+      </div>
+    </div>
+    <div class="chart-legend" id="chartLegend"></div>
+  </section>
+
+  <!-- GASTOS FIXOS -->
+  <section class="card" id="fixosSection">
+    <div class="card-header">
+      <h2 class="card-title">Gastos Fixos</h2>
+      <div class="header-actions">
+        <span class="badge badge-fixo" id="totalFixo">R$ 0,00</span>
+        <span class="card-icon">🔒</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="expense-table">
+        <thead>
+          <tr>
+            <th>Descrição</th><th>Categoria</th><th>Data</th><th>Valor</th><th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="fixosBody">
+          <tr class="empty-row" id="fixosEmpty"><td colspan="5">Nenhum gasto fixo ainda</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- GASTOS VARIÁVEIS -->
+  <section class="card" id="variaveisSection">
+    <div class="card-header">
+      <h2 class="card-title">Gastos Variáveis</h2>
+      <div class="header-actions">
+        <span class="badge badge-variavel" id="totalVariavel">R$ 0,00</span>
+        <span class="card-icon">🔄</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="expense-table">
+        <thead>
+          <tr>
+            <th>Descrição</th><th>Categoria</th><th>Data</th><th>Valor</th><th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="variaveisBody">
+          <tr class="empty-row" id="variaveisEmpty"><td colspan="5">Nenhum gasto variável ainda</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>FinControl © 2026 — Seus dados ficam apenas no seu navegador</p>
+</footer>
+
+<script>
+// ── ESTADO ──
+var state = { salary: 0, expenses: [], theme: 'sage' };
+
+var CAT = {
+  moradia:'🏠 Moradia', alimentacao:'🍽️ Alimentação', transporte:'🚗 Transporte',
+  saude:'💊 Saúde', lazer:'🎮 Lazer', educacao:'📚 Educação',
+  vestuario:'👗 Vestuário', outros:'📦 Outros'
+};
+
+var COLORS = ['#7BAE7F','#5B8DB8','#C17D5E','#9B7EC8','#C9A84C','#5CB8A8','#D95F5F','#7D7D9E'];
+
+// ── INIT ──
+window.onload = function() {
+  loadState();
+  setTodayDate();
+  render();
+  bindEvents();
+};
+
+function bindEvents() {
+  document.getElementById('setSalaryBtn').onclick = setSalary;
+  document.getElementById('salaryInput').onkeydown = function(e){ if(e.key==='Enter') setSalary(); };
+  document.getElementById('addExpenseBtn').onclick = addExpense;
+  document.getElementById('colorSwatches').onclick = function(e) {
+    var sw = e.target.closest('.swatch');
+    if (!sw) return;
+    var color = sw.getAttribute('data-color');
+    document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('active'); });
+    sw.classList.add('active');
+    state.theme = color;
+    document.body.setAttribute('data-theme', color);
+    saveState();
+    renderChart();
+  };
+}
+
+// ── PERSISTÊNCIA ──
+function saveState() {
+  try { localStorage.setItem('fincontrol', JSON.stringify(state)); } catch(e){}
+}
+function loadState() {
+  try {
+    var s = localStorage.getItem('fincontrol');
+    if (s) state = JSON.parse(s);
+  } catch(e){}
+  document.body.setAttribute('data-theme', state.theme || 'sage');
+  document.querySelectorAll('.swatch').forEach(function(sw){
+    sw.classList.toggle('active', sw.getAttribute('data-color') === state.theme);
+  });
+}
+
+// ── DATA ──
+function setTodayDate() {
+  var d = new Date();
+  var yyyy = d.getFullYear();
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById('expenseDate').value = yyyy+'-'+mm+'-'+dd;
+}
+
+// ── SALÁRIO ──
+function setSalary() {
+  var v = parseFloat(document.getElementById('salaryInput').value);
+  if (isNaN(v) || v < 0) { toast('⚠️ Digite um salário válido.','error'); return; }
+  state.salary = v;
+  saveState();
+  render();
+  toast('✅ Salário definido!','success');
+}
+
+// ── GASTO ──
+function addExpense() {
+  var desc   = document.getElementById('expenseDesc').value.trim();
+  var amount = parseFloat(document.getElementById('expenseAmount').value);
+  var type   = document.getElementById('expenseType').value;
+  var cat    = document.getElementById('expenseCategory').value;
+  var date   = document.getElementById('expenseDate').value;
+
+  if (!desc)              { toast('⚠️ Digite uma descrição.','error'); return; }
+  if (isNaN(amount)||amount<=0) { toast('⚠️ Digite um valor válido.','error'); return; }
+  if (!date)              { toast('⚠️ Selecione uma data.','error'); return; }
+
+  state.expenses.push({ id: Date.now(), desc:desc, amount:amount, type:type, category:cat, date:date });
+  saveState();
+  render();
+  clearForm();
+  toast('✅ "'+desc+'" adicionado!','success');
+}
+
+function removeExpense(id) {
+  state.expenses = state.expenses.filter(function(e){ return e.id !== id; });
+  saveState();
+  render();
+  toast('🗑️ Gasto removido.','');
+}
+
+function clearForm() {
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseAmount').value = '';
+  document.getElementById('expenseType').value = 'fixo';
+  document.getElementById('expenseCategory').value = 'moradia';
+  setTodayDate();
+}
+
+// ── RENDER ──
+function render() { renderSummary(); renderTables(); renderChart(); }
+
+function renderSummary() {
+  var total = state.expenses.reduce(function(s,e){ return s+e.amount; },0);
+  var bal   = state.salary - total;
+  var pct   = state.salary > 0 ? Math.min((total/state.salary)*100,100) : 0;
+
+  document.getElementById('displaySalary').textContent  = money(state.salary);
+  document.getElementById('displayTotal').textContent   = money(total);
+  document.getElementById('displayBalance').textContent = money(bal);
+  document.getElementById('progressLabel').textContent  = pct.toFixed(1)+'% gasto';
+
+  var bar = document.getElementById('progressBar');
+  bar.style.width = pct+'%';
+  if (pct < 50)      bar.style.background = 'linear-gradient(90deg,var(--accent),var(--accent-dark))';
+  else if (pct < 80) bar.style.background = 'linear-gradient(90deg,#C9A84C,#a88630)';
+  else               bar.style.background = 'linear-gradient(90deg,#D95F5F,#b03f3f)';
+}
+
+function renderTables() {
+  var fixos = state.expenses.filter(function(e){ return e.type==='fixo'; });
+  var vars  = state.expenses.filter(function(e){ return e.type==='variavel'; });
+  document.getElementById('totalFixo').textContent    = money(fixos.reduce(function(s,e){return s+e.amount;},0));
+  document.getElementById('totalVariavel').textContent= money(vars.reduce(function(s,e){return s+e.amount;},0));
+  fillTable('fixosBody','fixosEmpty', fixos);
+  fillTable('variaveisBody','variaveisEmpty', vars);
+}
+
+function fillTable(bodyId, emptyId, list) {
+  var tbody = document.getElementById(bodyId);
+  // remove rows except empty-row
+  var rows = tbody.querySelectorAll('tr:not(.empty-row)');
+  rows.forEach(function(r){ r.remove(); });
+
+  var emptyRow = document.getElementById(emptyId);
+  if (list.length === 0) { emptyRow.style.display=''; return; }
+  emptyRow.style.display = 'none';
+
+  var sorted = list.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  sorted.forEach(function(exp) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><strong>'+esc(exp.desc)+'</strong></td>'+
+      '<td><span class="cat-tag">'+(CAT[exp.category]||exp.category)+'</span></td>'+
+      '<td>'+fmtDate(exp.date)+'</td>'+
+      '<td class="amount-cell">'+money(exp.amount)+'</td>'+
+      '<td><button class="btn-delete" onclick="removeExpense('+exp.id+')">✕ Remover</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// ── GRÁFICO ──
+function renderChart() {
+  var canvas = document.getElementById('pieChart');
+  var empty  = document.getElementById('chartEmpty');
+  var legend = document.getElementById('chartLegend');
+
+  if (state.expenses.length === 0) {
+    canvas.style.display = 'none';
+    empty.style.display  = 'flex';
+    legend.innerHTML = '';
+    return;
+  }
+
+  canvas.style.display = 'block';
+  empty.style.display  = 'none';
+
+  // agrupa por categoria
+  var grouped = {};
+  state.expenses.forEach(function(e){
+    grouped[e.category] = (grouped[e.category]||0) + e.amount;
+  });
+
+  var keys   = Object.keys(grouped);
+  var vals   = keys.map(function(k){ return grouped[k]; });
+  var colors = keys.map(function(_,i){ return COLORS[i%COLORS.length]; });
+  var total  = vals.reduce(function(a,b){ return a+b; },0);
+
+  drawPie(canvas, vals, colors, total);
+  drawLegend(legend, keys, vals, colors, total);
+}
+
+function drawPie(canvas, vals, colors, total) {
+  var ctx  = canvas.getContext('2d');
+  var W=canvas.width, H=canvas.height;
+  var cx=W/2, cy=H/2, r=Math.min(W,H)/2-20, hole=r*0.46;
+
+  ctx.clearRect(0,0,W,H);
+  var start = -Math.PI/2;
+
+  vals.forEach(function(v,i){
+    var slice = (v/total)*2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+slice);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.shadowColor='rgba(0,0,0,0.10)';
+    ctx.shadowBlur=6;
+    ctx.fill();
+    ctx.shadowColor='transparent';
+    ctx.strokeStyle='#FDFCF9';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    start += slice;
+  });
+
+  // buraco central
+  ctx.beginPath();
+  ctx.arc(cx,cy,hole,0,2*Math.PI);
+  ctx.fillStyle='#FDFCF9';
+  ctx.fill();
+
+  // texto central
+  ctx.fillStyle='#1C1C1E';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.font='500 12px DM Sans, sans-serif';
+  ctx.fillText('Total',cx,cy-11);
+  ctx.font='bold 15px Syne, sans-serif';
+  ctx.fillText(money(total),cx,cy+12);
+}
+
+function drawLegend(container, keys, vals, colors, total) {
+  container.innerHTML = keys.map(function(k,i){
+    var pct = ((vals[i]/total)*100).toFixed(1);
+    return '<div class="legend-item">'+
+      '<span class="legend-dot" style="background:'+colors[i]+'"></span>'+
+      '<span>'+(CAT[k]||k)+' — <strong>'+pct+'%</strong> ('+money(vals[i])+')</span>'+
+      '</div>';
+  }).join('');
+}
+
+// ── TOAST ──
+function toast(msg, type) {
+  document.querySelectorAll('.toast').forEach(function(t){ t.remove(); });
+  var el = document.createElement('div');
+  el.className = 'toast'+(type?' '+type:'');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(function(){
+    el.style.transition='all 0.3s ease';
+    el.style.opacity='0';
+    el.style.transform='translateY(16px)';
+    setTimeout(function(){ el.remove(); },300);
+  },2800);
+}
+
+// ── UTILS ──
+function money(v) {
+  return 'R$ '+v.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function fmtDate(s) {
+  if(!s) return '—';
+  var p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0];
+}
+function esc(str) {
+  var d=document.createElement('div');
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
